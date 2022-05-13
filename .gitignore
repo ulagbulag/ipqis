@@ -15,11 +15,3 @@
 
 # Editor
 **/.vscode/
-
-# Temporary
-**/*.jpg
-**/*.jpeg
-**/*.json
-**/*.onnx
-**/*.png
-**/*.txt
