@@ -1,4 +1,3 @@
 [workspace]
 resolver = "2"
-members = ["api", "api/ulagbulag", "common", "pallet", "runtime"]
-default-members = ["runtime"]
+members = ["api", "api/ulagbulag", "common", "pallet"]

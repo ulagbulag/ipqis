@@ -13,4 +13,11 @@ repository = "https://github.com/ulagbulag-village/ipqis"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = ["ulagbulag"]
+ulagbulag = ["ipqis-api-ulagbulag"]
+
 [dependencies]
+ipis = { git = "https://github.com/ulagbulag-village/ipis" }
+ipqis-api-ulagbulag = { path = "./ulagbulag", optional = true }
+ipqis-common = { path = "../common" }
