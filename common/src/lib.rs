@@ -1,5 +1,5 @@
 use bytecheck::CheckBytes;
-use ipiis_api::client::IpiisClient;
+use ipiis_common::Ipiis;
 use ipis::{async_trait::async_trait, core::account::GuaranteeSigned};
 use rkyv::{Archive, Deserialize, Serialize};
 
@@ -7,7 +7,12 @@ use rkyv::{Archive, Deserialize, Serialize};
 pub trait Ipqis {}
 
 #[async_trait]
-impl Ipqis for IpiisClient {}
+impl<IpiisClient> Ipqis for IpiisClient
+where
+    IpiisClient: Ipiis + Send + Sync,
+    <IpiisClient as Ipiis>::Opcode: Default,
+{
+}
 
 pub type Request = GuaranteeSigned<RequestType>;
 
