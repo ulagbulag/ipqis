@@ -24,3 +24,9 @@ pub enum RequestType {
 pub enum Response {
     TODO,
 }
+
+::ipis::lazy_static::lazy_static! {
+    pub static ref KIND: Option<::ipis::core::value::hash::Hash> = Some(
+        ::ipis::core::value::hash::Hash::with_str("__ipis__ipqis__"),
+    );
+}
