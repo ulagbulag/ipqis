@@ -7,12 +7,7 @@ use rkyv::{Archive, Deserialize, Serialize};
 pub trait Ipqis {}
 
 #[async_trait]
-impl<IpiisClient> Ipqis for IpiisClient
-where
-    IpiisClient: Ipiis + Send + Sync,
-    <IpiisClient as Ipiis>::Opcode: Default,
-{
-}
+impl<IpiisClient> Ipqis for IpiisClient where IpiisClient: Ipiis + Send + Sync {}
 
 pub type Request = GuaranteeSigned<RequestType>;
 
