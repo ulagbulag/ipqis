@@ -1,13 +1,12 @@
-#![feature(more_qualified_paths)]
-
-use bytecheck::CheckBytes;
-use ipiis_common::{external_call, Ipiis};
+use ipiis_common::{define_io, external_call, Ipiis, ServerResult};
 use ipis::{
     async_trait::async_trait,
-    core::{account::GuaranteeSigned, anyhow::Result},
+    core::{
+        account::{GuaranteeSigned, GuarantorSigned},
+        anyhow::Result,
+    },
     function::{DynFunction, Function},
 };
-use rkyv::{Archive, Deserialize, Serialize};
 
 #[async_trait]
 pub trait Ipqis {
@@ -23,16 +22,16 @@ where
         // next target
         let target = self.get_account_primary(KIND.as_ref()).await?;
 
-        // pack request
-        let req = RequestType::SearchFunctions { query };
-
         // external call
         let (functions,) = external_call!(
-            call: self
-                .call_permanent_deserialized(&target, req)
-                .await?,
-            response: Response => SearchFunctions,
-            items: { functions },
+            client: self,
+            target: KIND.as_ref() => &target,
+            request: crate::io => SearchFunctions,
+            sign: self.sign(target, ())?,
+            inputs: {
+                query: query,
+            },
+            outputs: { functions, },
         );
 
         // unpack response
@@ -40,20 +39,18 @@ where
     }
 }
 
-pub type Request = GuaranteeSigned<RequestType>;
-
-#[derive(Clone, Debug, PartialEq, Archive, Serialize, Deserialize)]
-#[archive(compare(PartialEq))]
-#[archive_attr(derive(CheckBytes, Debug, PartialEq))]
-pub enum RequestType {
-    SearchFunctions { query: DynFunction },
-}
-
-#[derive(Clone, Debug, PartialEq, Archive, Serialize, Deserialize)]
-#[archive(compare(PartialEq))]
-#[archive_attr(derive(CheckBytes, Debug, PartialEq))]
-pub enum Response {
-    SearchFunctions { functions: Vec<Function> },
+define_io! {
+    SearchFunctions {
+        inputs: {
+            query: DynFunction,
+        },
+        input_sign: GuaranteeSigned<()>,
+        outputs: {
+            functions: Vec<Function>,
+        },
+        output_sign: GuarantorSigned<()>,
+        generics: { },
+    },
 }
 
 ::ipis::lazy_static::lazy_static! {
