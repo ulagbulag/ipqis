@@ -1,3 +1,6 @@
+pub mod json;
+pub mod node;
+
 use ipiis_common::{define_io, external_call, Ipiis, ServerResult};
 use ipis::{
     async_trait::async_trait,
@@ -57,4 +60,9 @@ define_io! {
     pub static ref KIND: Option<::ipis::core::value::hash::Hash> = Some(
         ::ipis::core::value::hash::Hash::with_str("__ipis__ipqis__"),
     );
+
+    pub static ref KIND_KEY: ::ipis::core::value::hash::Hash =
+        ::ipis::core::value::hash::Hash::with_str("__ipis__ipqis__key__");
+    pub static ref KIND_VALUE: ::ipis::core::value::hash::Hash =
+        ::ipis::core::value::hash::Hash::with_str("__ipis__ipqis__value__");
 }
