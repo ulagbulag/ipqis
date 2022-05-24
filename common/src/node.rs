@@ -206,7 +206,7 @@ impl ToString for Kind {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Archive, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Archive, Serialize, Deserialize)]
 #[archive_attr(derive(CheckBytes, Debug, PartialEq))]
 pub struct NodeTree {
     pub children: BTreeMap<Key, ValueCandidate>,
