@@ -81,12 +81,27 @@ where
             let path = client.put(value).await?;
             json_dump_value_primitive(client, parent, key, kind, path).await
         }
-        ::serde_json::Value::Number(value) => {
-            let parent = parent.unwrap_or(key);
-            let kind = Kind::Number;
-            let path = client.put(&value.to_string()).await?;
-            json_dump_value_primitive(client, parent, key, kind, path).await
-        }
+        ::serde_json::Value::Number(value) => match value {
+            value if value.is_i64() => {
+                let parent = parent.unwrap_or(key);
+                let kind = Kind::I64;
+                let path = client.put(&value.as_i64().unwrap()).await?;
+                json_dump_value_primitive(client, parent, key, kind, path).await
+            }
+            value if value.is_u64() => {
+                let parent = parent.unwrap_or(key);
+                let kind = Kind::U64;
+                let path = client.put(&value.as_u64().unwrap()).await?;
+                json_dump_value_primitive(client, parent, key, kind, path).await
+            }
+            value if value.is_f64() => {
+                let parent = parent.unwrap_or(key);
+                let kind = Kind::F64;
+                let path = client.put(&value.as_f64().unwrap()).await?;
+                json_dump_value_primitive(client, parent, key, kind, path).await
+            }
+            _ => unreachable!("exceeded the boundary of JSON number: {value}"),
+        },
         ::serde_json::Value::String(value) => {
             let parent = parent.unwrap_or(key);
             let kind = Kind::Text;

@@ -133,7 +133,9 @@ impl Value {
 pub enum Kind {
     Null,
     Bool,
-    Number,
+    I64,
+    U64,
+    F64,
     Text,
     Array,
     Object,
@@ -146,7 +148,9 @@ impl Kind {
         match self {
             Self::Null => "Null",
             Self::Bool => "Bool",
-            Self::Number => "Number",
+            Self::I64 => "I64",
+            Self::U64 => "U64",
+            Self::F64 => "F64",
             Self::Text => "Text",
             Self::Array => "Array",
             Self::Object => "Object",
@@ -161,7 +165,9 @@ impl FromStr for Kind {
         match s {
             "Null" => Ok(Self::Null),
             "Bool" => Ok(Self::Bool),
-            "Number" => Ok(Self::Number),
+            "I64" => Ok(Self::I64),
+            "U64" => Ok(Self::U64),
+            "F64" => Ok(Self::F64),
             "Text" => Ok(Self::Text),
             "Array" => Ok(Self::Array),
             "Object" => Ok(Self::Object),
@@ -183,7 +189,9 @@ impl TryFrom<Hash> for Kind {
         match value {
             value if value == Hash::with_str("Null") => Ok(Self::Null),
             value if value == Hash::with_str("Bool") => Ok(Self::Bool),
-            value if value == Hash::with_str("Number") => Ok(Self::Number),
+            value if value == Hash::with_str("I64") => Ok(Self::I64),
+            value if value == Hash::with_str("U64") => Ok(Self::U64),
+            value if value == Hash::with_str("F64") => Ok(Self::F64),
             value if value == Hash::with_str("Text") => Ok(Self::Text),
             value if value == Hash::with_str("Array") => Ok(Self::Array),
             value if value == Hash::with_str("Object") => Ok(Self::Object),
