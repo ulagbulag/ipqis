@@ -1,3 +1,5 @@
+pub extern crate serde_json;
+
 pub mod json;
 pub mod node;
 
@@ -8,12 +10,14 @@ use ipis::{
         account::{GuaranteeSigned, GuarantorSigned},
         anyhow::Result,
     },
-    function::{DynFunction, Function},
+    function::DynFunction,
 };
+
+use crate::node::NodeTree;
 
 #[async_trait]
 pub trait Ipqis {
-    async fn search_functions(&self, query: DynFunction) -> Result<Vec<Function>>;
+    async fn update_agent(&self, query: DynFunction) -> Result<NodeTree>;
 }
 
 #[async_trait]
@@ -21,35 +25,35 @@ impl<IpiisClient> Ipqis for IpiisClient
 where
     IpiisClient: Ipiis + Send + Sync,
 {
-    async fn search_functions(&self, query: DynFunction) -> Result<Vec<Function>> {
+    async fn update_agent(&self, query: DynFunction) -> Result<NodeTree> {
         // next target
         let target = self.get_account_primary(KIND.as_ref()).await?;
 
         // external call
-        let (functions,) = external_call!(
+        let (node,) = external_call!(
             client: self,
             target: KIND.as_ref() => &target,
-            request: crate::io => SearchFunctions,
+            request: crate::io => UpdateAgent,
             sign: self.sign(target, ())?,
             inputs: {
                 query: query,
             },
-            outputs: { functions, },
+            outputs: { node, },
         );
 
         // unpack response
-        Ok(functions)
+        Ok(node)
     }
 }
 
 define_io! {
-    SearchFunctions {
+    UpdateAgent {
         inputs: {
             query: DynFunction,
         },
         input_sign: GuaranteeSigned<()>,
         outputs: {
-            functions: Vec<Function>,
+            node: NodeTree,
         },
         output_sign: GuarantorSigned<()>,
         generics: { },

@@ -1,26 +1,30 @@
-pub extern crate serde_json;
-
 use core::str::FromStr;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
+use bytecheck::CheckBytes;
 use ipis::{
     attention::AttentionUnit,
     core::{
         anyhow::bail,
+        signed::IsSigned,
         value::{
             hash::Hash,
             text::{Text, TextHash},
         },
     },
 };
-use serde_json::Number;
+use rkyv::{Archive, Deserialize, Serialize};
 
-#[derive(Clone)]
+#[derive(Clone, Archive, Serialize, Deserialize)]
+#[archive(compare(PartialEq))]
+#[archive_attr(derive(CheckBytes, Debug))]
 pub struct Key {
     pub text: Text,
     pub hash: TextHash,
     pub kind: Kind,
 }
+
+impl IsSigned for Key {}
 
 impl ::core::borrow::Borrow<str> for Key {
     fn borrow(&self) -> &str {
@@ -40,7 +44,39 @@ impl PartialEq for Key {
     }
 }
 
+impl PartialEq for ArchivedKey {
+    fn eq(&self, other: &Self) -> bool {
+        PartialEq::eq(&self.text.msg, &other.text.msg)
+    }
+}
+
 impl Eq for Key {}
+
+impl Eq for ArchivedKey {}
+
+impl PartialOrd for Key {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        PartialOrd::partial_cmp(self.text.msg.as_str(), other.text.msg.as_str())
+    }
+}
+
+impl PartialOrd for ArchivedKey {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        PartialOrd::partial_cmp(&self.text.msg, &other.text.msg)
+    }
+}
+
+impl Ord for Key {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        Ord::cmp(self.text.msg.as_str(), other.text.msg.as_str())
+    }
+}
+
+impl Ord for ArchivedKey {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        Ord::cmp(&self.text.msg, &other.text.msg)
+    }
+}
 
 impl ::core::hash::Hash for Key {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
@@ -48,21 +84,37 @@ impl ::core::hash::Hash for Key {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+impl ::core::hash::Hash for ArchivedKey {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        ::core::hash::Hash::hash(&self.text.msg, state)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Archive, Serialize, Deserialize)]
+#[archive(compare(PartialEq))]
+#[archive_attr(derive(CheckBytes, Debug, PartialEq))]
 pub struct ValueCandidate {
     pub attention: AttentionUnit,
     pub value: Value,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+impl IsSigned for ValueCandidate {}
+
+#[derive(Clone, Debug, PartialEq, Archive, Serialize, Deserialize)]
+#[archive(compare(PartialEq))]
+#[archive_attr(derive(CheckBytes, Debug, PartialEq))]
 pub enum Value {
     Null,
     Bool(bool),
-    Number(Number),
+    U64(u64),
+    I64(i64),
+    F64(f64),
     Text(Text),
     Array { len: u64 },
     Object,
 }
+
+impl IsSigned for Value {}
 
 impl Value {
     pub fn unwrap_text(&self) -> &Text {
@@ -73,7 +125,11 @@ impl Value {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(
+    Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Archive, Serialize, Deserialize,
+)]
+#[archive(compare(PartialEq))]
+#[archive_attr(derive(CheckBytes, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash))]
 pub enum Kind {
     Null,
     Bool,
@@ -82,6 +138,8 @@ pub enum Kind {
     Array,
     Object,
 }
+
+impl IsSigned for Kind {}
 
 impl Kind {
     pub fn as_static_str(&self) -> &'static str {
@@ -140,8 +198,10 @@ impl ToString for Kind {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Archive, Serialize, Deserialize)]
+#[archive_attr(derive(CheckBytes, Debug, PartialEq))]
 pub struct NodeTree {
-    pub value: ValueCandidate,
-    pub children: HashMap<Key, Self>,
+    pub children: BTreeMap<Key, ValueCandidate>,
 }
+
+impl IsSigned for NodeTree {}
