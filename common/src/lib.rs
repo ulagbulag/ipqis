@@ -3,7 +3,7 @@ pub extern crate serde_json;
 pub mod json;
 pub mod node;
 
-use ipiis_common::{define_io, external_call, Ipiis, ServerResult};
+use ipiis_common::{define_io, external_call, Ipiis, ServerResult, CLIENT_DUMMY};
 use ipis::{
     async_trait::async_trait,
     core::{
@@ -34,7 +34,7 @@ where
             client: self,
             target: KIND.as_ref() => &target,
             request: crate::io => UpdateAgent,
-            sign: self.sign(target, ())?,
+            sign: self.sign(target, CLIENT_DUMMY)?,
             inputs: {
                 query: query,
             },
@@ -51,11 +51,11 @@ define_io! {
         inputs: {
             query: DynFunction,
         },
-        input_sign: GuaranteeSigned<()>,
+        input_sign: GuaranteeSigned<u8>,
         outputs: {
             node: NodeTree,
         },
-        output_sign: GuarantorSigned<()>,
+        output_sign: GuarantorSigned<u8>,
         generics: { },
     },
 }
