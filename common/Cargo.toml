@@ -22,5 +22,5 @@ ipiis-common = { git = "https://github.com/ulagbulag-village/ipiis" }
 ipsis-common = { git = "https://github.com/ulagbulag-village/ipsis" }
 
 bytecheck = "0.6"
-rkyv = { version = "0.7", features = ["archive_be"] }
+rkyv = { version = "0.7", features = ["archive_le"] }
 serde_json = "1.0"
