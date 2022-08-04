@@ -9,6 +9,7 @@ use ipis::{
     core::{
         account::{GuaranteeSigned, GuarantorSigned},
         anyhow::Result,
+        data::Data,
     },
     function::DynFunction,
 };
@@ -34,7 +35,7 @@ where
             client: self,
             target: KIND.as_ref() => &target,
             request: crate::io => UpdateAgent,
-            sign: self.sign(target, CLIENT_DUMMY)?,
+            sign: self.sign_owned(target, CLIENT_DUMMY)?,
             inputs: {
                 query: query,
             },
@@ -51,11 +52,11 @@ define_io! {
         inputs: {
             query: DynFunction,
         },
-        input_sign: GuaranteeSigned<u8>,
+        input_sign: Data<GuaranteeSigned, u8>,
         outputs: {
             node: NodeTree,
         },
-        output_sign: GuarantorSigned<u8>,
+        output_sign: Data<GuarantorSigned, u8>,
         generics: { },
     },
 }

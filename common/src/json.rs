@@ -51,7 +51,7 @@ where
             relpath: false,
             path: key_path,
         };
-        let key_word = client.sign(account_ref, key_word)?;
+        let key_word = client.sign_owned(account_ref, key_word)?;
 
         let value_word = WordHash {
             key: WordKeyHash {
@@ -62,7 +62,7 @@ where
             relpath: false,
             path: value_path,
         };
-        let value_word = client.sign(account_ref, value_word)?;
+        let value_word = client.sign_owned(account_ref, value_word)?;
 
         let parent_hash = Hash::with_str(parent);
         client.put_word(&parent_hash, &key_word).await?;
