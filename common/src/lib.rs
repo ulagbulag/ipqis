@@ -18,6 +18,8 @@ use crate::node::NodeTree;
 
 #[async_trait]
 pub trait Ipqis {
+    async fn protocol(&self) -> Result<String>;
+
     async fn update_agent(&self, query: DynFunction) -> Result<NodeTree>;
 }
 
@@ -26,6 +28,24 @@ impl<IpiisClient> Ipqis for IpiisClient
 where
     IpiisClient: Ipiis + Send + Sync,
 {
+    async fn protocol(&self) -> Result<String> {
+        // next target
+        let target = self.get_account_primary(KIND.as_ref()).await?;
+
+        // external call
+        let (protocol,) = external_call!(
+            client: self,
+            target: KIND.as_ref() => &target,
+            request: crate::io => Protocol,
+            sign: self.sign_owned(target, ())?,
+            inputs: { },
+            outputs: { protocol, },
+        );
+
+        // unpack response
+        Ok(protocol)
+    }
+
     async fn update_agent(&self, query: DynFunction) -> Result<NodeTree> {
         // next target
         let target = self.get_account_primary(KIND.as_ref()).await?;
@@ -48,6 +68,15 @@ where
 }
 
 define_io! {
+    Protocol {
+        inputs: { },
+        input_sign: Data<GuaranteeSigned, ()>,
+        outputs: {
+            protocol: String,
+        },
+        output_sign: Data<GuarantorSigned, ()>,
+        generics: { },
+    },
     UpdateAgent {
         inputs: {
             query: DynFunction,
